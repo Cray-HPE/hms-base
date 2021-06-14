@@ -11,41 +11,17 @@ pipeline {
     }
 
     environment {
-        NAME = "cray-bos"
-        DESCRIPTION = "Cray Management System Boot Orchestration Service (BOS)"
+        NAME = "hms-base"
+        DESCRIPTION = "Cray Hardware Management System Base library"
         IS_STABLE = getBuildIsStable()
         VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
         DOCKER_ARGS = getDockerBuildArgs(name: env.NAME, description: env.DESCRIPTION)
-        CHART_VERSION = getChartVersion(version: env.VERSION)
-        BUILD_METADATA = getRpmRevision(isStable: env.IS_STABLE)
     }
 
     stages {
-        stage("Prepare") {
-            steps {
-                runLibraryScript("addRpmMetaData.sh", env.SPEC_FILE)
-                sh "make prepare"
-            }
-        }
         stage("Build") {
-            parallel {
-                stage('Image') {
-                    steps {
-                        sh "make image"
-                    }
-                }
-
-                stage('Chart') {
-                    steps {
-                        sh "make chart"
-                    }
-                }
-
-                stage('Rpm') {
-                    steps {
-                        sh "make rpm"
-                    }
-                }
+            steps {
+                sh "make image"
             }
         }
 
@@ -53,9 +29,6 @@ pipeline {
             steps {
                 script {
                     publishCsmDockerImage(image: env.NAME, tag: env.VERSION, isStable: env.IS_STABLE)
-                    publishCsmHelmCharts(component: env.NAME, chartsPath: "${WORKSPACE}/kubernetes/.packaged", isStable: env.IS_STABLE)
-                    publishCsmRpms(component: "bos", pattern: "dist/rpmbuild/RPMS/x86_64/*.rpm", arch: "x86_64", isStable: env.IS_STABLE)
-                    publishCsmRpms(component: "bos", pattern: "dist/rpmbuild/SRPMS/*.rpm", arch: "src", isStable: env.IS_STABLE)
                 }
             }
         }
