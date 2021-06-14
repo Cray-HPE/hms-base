@@ -24,6 +24,18 @@ pipeline {
                 sh "make image"
             }
         }
+        
+        stage("Run Unit Tests") {
+            steps {
+                sh "make unittest"
+            }
+        }
+        
+        stage("Run Coverage Tests") {
+            steps {
+                sh "make coverage"
+            }
+        }
 
         stage('Publish ') {
             steps {
