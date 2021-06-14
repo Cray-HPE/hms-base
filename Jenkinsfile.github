@@ -19,12 +19,6 @@ pipeline {
     }
 
     stages {
-        stage("Build") {
-            steps {
-                sh "make image"
-            }
-        }
-        
         stage("Run Unit Tests") {
             steps {
                 sh "make unittest"
@@ -34,6 +28,12 @@ pipeline {
         stage("Run Coverage Tests") {
             steps {
                 sh "make coverage"
+            }
+        }
+        
+        stage("Build") {
+            steps {
+                sh "make image"
             }
         }
 
