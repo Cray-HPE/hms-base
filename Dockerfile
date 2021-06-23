@@ -33,6 +33,8 @@ RUN set -ex \
 # Copy the files in for the next stages to use.
 FROM build-base AS base
 
+RUN go env -w GO111MODULE=auto
+
 COPY *.go $GOPATH/src/stash.us.cray.com/HMS/hms-base/
 COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-base/vendor
 
