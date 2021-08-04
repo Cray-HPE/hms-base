@@ -14,11 +14,11 @@ REMINDER 2: HAVE YOU UPDATED THE COPYRIGHT PER hpe GUIDELINES: Copyright 2014-20
 LIST AND CHARACTERIZE RELATIONSHIP TO JIRA ISSUES AND OTHER PULL REQUESTS. BE SURE LIST DEPENDENCIES.
 
 * Resolves CASM-XYZ
-* Change will also be needed in <insert branch name here>
+* Change will also be needed in `<insert branch name here>`
 * Future work required by CASM-ABC
-* Merge with <insert PR URL here>
-* Merge before <insert PR URL here>
-* Merge after <insert PR URL here>
+* Merge with `<insert PR URL here>`
+* Merge before `<insert PR URL here>`
+* Merge after `<insert PR URL here>`
 
 ### Testing
 
@@ -26,7 +26,7 @@ LIST THE ENVIRONMENTS IN WHICH THESE CHANGES WERE TESTED.
 
 Tested on:
 
-* <drink system>
+* `<drink system>`
 * Craystack
 * CMS base-box
 * Virtual Shasta
