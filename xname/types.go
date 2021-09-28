@@ -333,7 +333,7 @@ type MgmtSwitch struct {
 }
 
 func (ms MgmtSwitch) String() string {
-	formatStr, _, _ := base.GetHMSTypeFormatString(base.MgmtHLSwitch)
+	formatStr, _, _ := base.GetHMSTypeFormatString(base.MgmtSwitch)
 	return fmt.Sprintf(formatStr, ms.Cabinet, ms.Chassis, ms.Slot)
 }
 
