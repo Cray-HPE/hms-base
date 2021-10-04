@@ -669,7 +669,16 @@ func GetHMSTypeFormatString(hmsType HMSType) (string, int, error) {
 		return value.GenStr, value.NumArgs, nil
 	}
 	
-	return "", 0, fmt.Errorf("unknown HMSType: %s", typeLower)
+	return "", 0, fmt.Errorf("unknown HMSType: %s", hmsType)
+}
+
+func GetHMSTypeRegex(hmsType HMSType) (*regexp.Regexp, error) {
+	typeLower := strings.ToLower(hmsType.String())
+	if value, ok := hmsCompRecognitionTable[typeLower]; ok {
+		return value.Regex, nil
+	}
+	
+	return nil, fmt.Errorf("unknown HMSType: %s", hmsType)
 }
 
 // Allow HMSType to be treated as a standard string type.
