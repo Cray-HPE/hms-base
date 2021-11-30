@@ -28,6 +28,8 @@ func GetHMSType(obj interface{}) (base.HMSType, error) {
 		return base.CabinetPDUController, nil
 	case Chassis, *Chassis:
 		return base.Chassis, nil
+	case ChassisBMC, *ChassisBMC:
+		return base.ChassisBMC, nil
 	case MgmtSwitch, *MgmtSwitch:
 		return base.MgmtSwitch, nil
 	case MgmtSwitchConnector, *MgmtSwitchConnector:
@@ -111,6 +113,12 @@ func FromString(xname string) (interface{}, base.HMSType) {
 		component = Chassis{
 			Cabinet: matches[0],
 			Chassis: matches[1],
+		}
+	case base.ChassisBMC:
+		component = ChassisBMC{
+			Cabinet: matches[0],
+			Chassis: matches[1],
+			BMC:     matches[2],
 		}
 	case base.MgmtSwitch:
 		component = MgmtSwitch{

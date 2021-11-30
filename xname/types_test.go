@@ -133,6 +133,8 @@ func TestRegex(t *testing.T) {
 }
 
 func TestToFromXnames(t *testing.T) {
+	// Note, not all of the xnames in the following tests are valid. Each ordinal is incremented by 1 to verify that each ordinal is being properly
+	// handled and not getting lost or switched around.
 	tests := []struct {
 		xname             string
 		hmsType           base.HMSType
@@ -168,12 +170,20 @@ func TestToFromXnames(t *testing.T) {
 				Chassis: 2,
 			},
 		}, {
+			"x1c2b0", // TODO add a test to verify what happens when x1c2b3 is given.
+			base.ChassisBMC,
+			ChassisBMC{
+				Cabinet: 1,
+				Chassis: 2,
+				BMC:     0,
+			},
+		}, {
 			"x1c2h3",
 			base.MgmtHLSwitchEnclosure,
 			MgmtHLSwitchEnclosure{
 				Cabinet: 1,
 				Chassis: 2,
-				Slot: 3,
+				Slot:    3,
 			},
 		}, {
 			"x1c2h3s4",
@@ -181,8 +191,8 @@ func TestToFromXnames(t *testing.T) {
 			MgmtHLSwitch{
 				Cabinet: 1,
 				Chassis: 2,
-				Slot: 3,
-				Space: 4,
+				Slot:    3,
+				Space:   4,
 			},
 		}, {
 			"x1c2w3",
@@ -190,15 +200,15 @@ func TestToFromXnames(t *testing.T) {
 			MgmtSwitch{
 				Cabinet: 1,
 				Chassis: 2,
-				Slot: 3,
+				Slot:    3,
 			},
 		}, {
 			"x1c2w3j4",
 			base.MgmtSwitchConnector,
 			MgmtSwitchConnector{
-				Cabinet: 1,
-				Chassis: 2,
-				Slot: 3,
+				Cabinet:    1,
+				Chassis:    2,
+				Slot:       3,
 				SwitchPort: 4,
 			},
 		}, {
@@ -277,7 +287,7 @@ func TestToFromXnames(t *testing.T) {
 			t.Error("Unexpected HMS Type for xname struct:", objXnameType, "expected:", expectedHMSType)
 		}
 
-		// Verify the xname string built from the xname struct matches what was given to FromString  
+		// Verify the xname string built from the xname struct matches what was given to FromString
 		generatedXname := componentRaw.(fmt.Stringer).String()
 		if xname != generatedXname {
 			t.Error("Unexpected generated xname:", generatedXname, "expected:", xname)

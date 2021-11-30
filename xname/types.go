@@ -279,6 +279,14 @@ func (c Chassis) ValidateEnhanced(class base.HMSClass) error {
 	return nil
 }
 
+func (c Chassis) ChassisBMC(bmc int) ChassisBMC {
+	return ChassisBMC{
+		Cabinet: c.Cabinet,
+		Chassis: c.Chassis,
+		BMC: bmc,
+	}
+}
+
 func (c Chassis) MgmtHLSwitchEnclosure(slot int) MgmtHLSwitchEnclosure {
 	return MgmtHLSwitchEnclosure{
 		Cabinet: c.Cabinet,
@@ -324,6 +332,63 @@ func (c Chassis) ComputeModule(slot int) ComputeModule {
 func (c Chassis) NodeBMC(slot, bmc int) NodeBMC {
 	return c.ComputeModule(slot).NodeBMC(bmc)
 }
+
+// xXcCbB
+// Mountain and Hill have only b0
+// River does not have ChassisBMCs
+type ChassisBMC struct {
+	Cabinet int // X: 0-999
+	Chassis int // C: 0-7
+	BMC int // B: 0
+}
+
+func (c ChassisBMC) String() string {
+	formatStr, _, _ := base.GetHMSTypeFormatString(base.ChassisBMC)
+	return fmt.Sprintf(formatStr, c.Cabinet, c.Chassis, c.BMC)
+}
+
+func (c ChassisBMC) Parent() Chassis {
+	return Chassis{
+		Cabinet: c.Cabinet,
+		Chassis: c.Chassis,
+	}
+}
+
+func (c ChassisBMC) Validate() error {
+	xname := c.String()
+	if !base.IsHMSCompIDValid(xname) {
+		return fmt.Errorf("invalid Chassis xname: %s", xname)
+	}
+
+	return nil
+}
+
+func (c ChassisBMC) ValidateEnhanced(class base.HMSClass) error {
+	// Perform normal validation
+	if c.Validate() != nil {
+		// Xname is not valid
+	}
+
+	if c.Parent().ValidateEnhanced(class) != nil {
+		// Verify all parents are valid 
+	}
+
+	// Chassis Validation
+	switch class {
+	case base.ClassRiver:
+		// River does not have ChassisBMCs 
+	case base.ClassHill:
+		fallthrough
+	case base.ClassMountain:
+		if c.BMC != 0 {
+			// Mountain and Hill must have b0 for there ChassisBMC
+		}
+	default:
+	}
+
+	return nil
+}
+
 
 // xXcCwW
 type MgmtSwitch struct {
