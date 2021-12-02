@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	base "github.com/Cray-HPE/hms-base"
+	multierror "github.com/hashicorp/go-multierror"
 )
 
 // s0
@@ -57,20 +58,26 @@ func (c CDU) Validate() error {
 }
 
 func (c CDU) ValidateEnhanced() error {
+	var result error
+
 	// Perform normal validation
-	if c.Validate() != nil {
+	if err := c.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)  
 	}
 
-	if c.Parent().ValidateEnhanced() != nil {
+	if err := c.Parent().ValidateEnhanced(); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)  
 	}
 
 	if !(0 <= c.CoolingGroup || c.CoolingGroup <= 999) {
 		// Cooling group range
+		err := fmt.Errorf("invalid cooling group ordinal (%v) expected value between 0 and 999", c.CoolingGroup)
+		result = multierror.Append(result, err)  
 	}
 
-	return nil
+	return result
 }
 
 func (c CDU) CDUMgmtSwitch(slot int) CDUMgmtSwitch {
@@ -107,20 +114,26 @@ func (cms CDUMgmtSwitch) Validate() error {
 }
 
 func (cms CDUMgmtSwitch) ValidateEnhanced() error {
+	var result error
+
 	// Perform normal validation
-	if cms.Validate() != nil {
+	if err := cms.Validate(); err  != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)  
 	}
 
-	if cms.Parent().ValidateEnhanced() != nil {
+	if err := cms.Parent().ValidateEnhanced(); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)  
 	}
 
 	if !(0 <= cms.Slot || cms.Slot <= 31) {
 		// CDU Switch slot
+		err := fmt.Errorf("invalid slot ordinal (%v) expected value between 0 and 31", cms.Slot)
+		result = multierror.Append(result, err)  
 	}
 
-	return nil
+	return result
 }
 
 // xX
@@ -147,20 +160,26 @@ func (c Cabinet) Validate() error {
 }
 
 func (c Cabinet) ValidateEnhanced() error {
+	var result error
+
 	// Perform normal validation
-	if c.Validate() != nil {
+	if err := c.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)  
 	}
 
-	if c.Parent().ValidateEnhanced() != nil {
+	if err := c.Parent().ValidateEnhanced(); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)  
 	}
 
 	if !(0 <= c.Cabinet && c.Cabinet <= 999) {
 		// Cabinet number out of range
+		err := fmt.Errorf("invalid cabinet ordinal (%v) expected value between 0 and 999", c.Cabinet)
+		result = multierror.Append(result, err)  
 	}
 
-	return nil
+	return result
 }
 
 func (c Cabinet) Chassis(chassis int) Chassis {
@@ -204,20 +223,27 @@ func (p CabinetPDUController) Validate() error {
 }
 
 func (p CabinetPDUController) ValidateEnhanced() error {
+	var result error
+
 	// Perform normal validation
-	if p.Validate() != nil {
+	if err := p.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)  
 	}
 
-	if p.Parent().ValidateEnhanced() != nil {
+	if err := p.Parent().ValidateEnhanced(); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)  
+
 	}
 
 	if !(0 <= p.PDUController && p.PDUController <= 3) {
 		// Cabinet number out of range
+		err := fmt.Errorf("invalid pdu controller ordinal (%v) expected value between 0 and 3", p.PDUController)
+		result = multierror.Append(result, err)  
 	}
 
-	return nil
+	return result
 }
 
 // xXcC
@@ -250,13 +276,17 @@ func (c Chassis) Validate() error {
 }
 
 func (c Chassis) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if c.Validate() != nil {
+	if err := c.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if c.Parent().ValidateEnhanced() != nil {
+	if err := c.Parent().ValidateEnhanced(); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Chassis Validation
@@ -264,19 +294,27 @@ func (c Chassis) ValidateEnhanced(class base.HMSClass) error {
 	case base.ClassRiver:
 		if c.Chassis != 0 {
 			// River chassis must be equal to 0
+			err := fmt.Errorf("invalid river chassis ordinal (%v) expected 0", c.Chassis)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		if !(c.Chassis == 1 || c.Chassis == 3) {
 			// Hill has Chassis 1 or 3
+			err := fmt.Errorf("invalid hill chassis ordinal (%v) expected 1 or 3", c.Chassis)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassMountain:
 		if !(0 <= c.Chassis && c.Chassis <= 7) {
 			// Mountain must chassis between 0 and 7
+			err := fmt.Errorf("invalid hill chassis ordinal (%v) expected value between 0 and 7", c.Chassis)
+			result = multierror.Append(result, err)
 		}
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 func (c Chassis) ChassisBMC(bmc int) ChassisBMC {
@@ -364,29 +402,39 @@ func (c ChassisBMC) Validate() error {
 }
 
 func (c ChassisBMC) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if c.Validate() != nil {
+	if err := c.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if c.Parent().ValidateEnhanced(class) != nil {
+	if err := c.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Chassis Validation
 	switch class {
 	case base.ClassRiver:
 		// River does not have ChassisBMCs 
+		err := fmt.Errorf("invalid - chassis bmcs do not exist for river")
+		result = multierror.Append(result, err)
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
 		if c.BMC != 0 {
 			// Mountain and Hill must have b0 for there ChassisBMC
+			err := fmt.Errorf("invalid chassis bmc ordinal (%v) expected value is 0", c.BMC)
+			result = multierror.Append(result, err)
 		}
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 
@@ -419,31 +467,40 @@ func (ms MgmtSwitch) Validate() error {
 }
 
 func (ms MgmtSwitch) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if ms.Validate() != nil {
+	if err := ms.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if ms.Parent().ValidateEnhanced(class) != nil {
+	if err := ms.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Chassis Validation
 	switch class {
 	case base.ClassRiver:
 		// Expected to be river only
-
 		if !(1 <= ms.Slot && ms.Slot <= 48) {
-			// Verify that the U is within a standard rack
+			// Verify that the U is within a standard rack slot
+			err := fmt.Errorf("invalid rack slot ordinal (%v) expected value is between 1 and 48", ms.Slot)			
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
 		// MgmtSwitches are only for river
+		err := fmt.Errorf("invalid - mgmt switches do not exist for %s", class)
+		result = multierror.Append(result, err)
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 func (ms MgmtSwitch) MgmtSwitchConnector(switchPort int) MgmtSwitchConnector {
@@ -486,31 +543,40 @@ func (msc MgmtSwitchConnector) Validate() error {
 }
 
 func (msc MgmtSwitchConnector) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if msc.Validate() != nil {
+	if err := msc.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if msc.Parent().ValidateEnhanced(class) != nil {
+	if err := msc.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Chassis Validation
 	switch class {
 	case base.ClassRiver:
 		// Expected to be river only
-
 		if !(1 <= msc.SwitchPort) {
 			// Verify that the switch port is valid
+			err := fmt.Errorf("invalid switch port ordinal (%v) expected greater than 1", msc.SwitchPort)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
-		// MgmtSwitches are only for river
+		// MgmtSwitchConnectors are only for river
+		err := fmt.Errorf("invalid - mgmt switch connectors do not exist for %s", class)
+		result = multierror.Append(result, err)
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 // xXcChH
@@ -542,13 +608,17 @@ func (enclosure MgmtHLSwitchEnclosure) Validate() error {
 }
 
 func (enclosure MgmtHLSwitchEnclosure) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if enclosure.Validate() != nil {
+	if err := enclosure.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if enclosure.Parent().ValidateEnhanced(class) != nil {
+	if err := enclosure.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Chassis Validation
@@ -558,15 +628,21 @@ func (enclosure MgmtHLSwitchEnclosure) ValidateEnhanced(class base.HMSClass) err
 
 		if !(1 <= enclosure.Slot && enclosure.Slot <= 48) {
 			// Verify that the U is within a standard rack
+			err := fmt.Errorf("invalid rack slot ordinal (%v) expected value is between 1 and 48", enclosure.Slot)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
-		// MgmtSwitches are only for river
+		// MgmtHLSwitchEnclosure are only for river
+		err := fmt.Errorf("invalid - mgmt hl switch enclosures do not exist for %s", class)
+		result = multierror.Append(result, err)
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 func (enclosure MgmtHLSwitchEnclosure) MgmtHLSwitch(space int) MgmtHLSwitch {
@@ -609,31 +685,41 @@ func (mhls MgmtHLSwitch) Validate() error {
 }
 
 func (mhls MgmtHLSwitch) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if mhls.Validate() != nil {
+	if err := mhls.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if mhls.Parent().ValidateEnhanced(class) != nil {
+	if err := mhls.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Chassis Validation
 	switch class {
 	case base.ClassRiver:
 		// Expected to be river only
-
 		if !(1 <= mhls.Space && mhls.Space <= 4) {
 			// Verify a valid space value
+			err := fmt.Errorf("invalid space ordinal (%v) expected value is between 1 and 4", mhls.Space)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
-		// MgmtSwitches are only for river
+		// MgmtHLSwitch are only for river
+		err := fmt.Errorf("invalid - mgmt hl switches do not exist for %s", class)
+		result = multierror.Append(result, err)
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
+
 	}
 
-	return nil
+	return result
 }
 
 // xXcCrR
@@ -667,13 +753,17 @@ func (rm RouterModule) Validate() error {
 }
 
 func (rm RouterModule) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if rm.Validate() != nil {
+	if err := rm.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if rm.Parent().ValidateEnhanced(class) != nil {
+	if err := rm.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Router Module Validation
@@ -681,16 +771,22 @@ func (rm RouterModule) ValidateEnhanced(class base.HMSClass) error {
 	case base.ClassRiver:
 		if !(1 <= rm.Slot && rm.Slot <= 48) {
 			// Standard Rack size			
+			err := fmt.Errorf("invalid rack slot ordinal (%v) expected value is between 1 and 48", rm.Slot)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
 		if !(0 <= rm.Slot && rm.Slot <= 7) {
-			// Mountain Chassis			
+			err := fmt.Errorf("invalid chassis slot ordinal (%v) expected value is between 0 and 7", rm.Slot)
+			result = multierror.Append(result, err)
 		}
+	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 func (rm RouterModule) RouterBMC(bmc int) RouterBMC {
@@ -734,21 +830,27 @@ func (bmc RouterBMC) Validate() error {
 }
 
 func (bmc RouterBMC) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if bmc.Validate() != nil {
+	if err := bmc.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if bmc.Parent().ValidateEnhanced(class) != nil {
+	if err := bmc.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Router BMC Validation
 	if bmc.BMC != 0 {
 		// BMC should always be 0
+		err := fmt.Errorf("invalid router bmc ordinal (%v) expected value is 0", bmc.BMC)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 // xXcCsS
@@ -782,30 +884,41 @@ func (cm ComputeModule) Validate() error {
 }
 
 func (cm ComputeModule) ValidateEnhanced(class base.HMSClass) error {
+	var result error
+
 	// Perform normal validation
-	if cm.Validate() != nil {
+	if err := cm.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if cm.Parent().ValidateEnhanced(class) != nil {
+	if err := cm.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// Compute Module Validation
 	switch class {
 	case base.ClassRiver:
 		if !(1 <= cm.Slot && cm.Slot <= 48) {
-			// Standard Rack size			
+			// Standard Rack size		
+			err := fmt.Errorf("invalid rack slot ordinal (%v) expected value is between 1 and 48", cm.Slot)	
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
 		if !(0 <= cm.Slot && cm.Slot <= 7) {
-			// Mountain Chassis			
+			// Mountain Chassis
+			err := fmt.Errorf("invalid chassis slot ordinal (%v) expected value is between 0 and 7", cm.Slot)
+			result = multierror.Append(result, err)			
 		}
+	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 func (cm ComputeModule) NodeBMC(bmc int) NodeBMC {
@@ -849,13 +962,17 @@ func (bmc NodeBMC) Validate() error {
 }
 
 func (bmc NodeBMC) ValidateEnhanced(class base.HMSClass, nodeChassisType NodeBladeType) error {
+	var result error
+
 	// Perform normal validation
-	if bmc.Validate() != nil {
+	if err :=bmc.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if bmc.Parent().ValidateEnhanced(class) != nil {
+	if err := bmc.Parent().ValidateEnhanced(class); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 
 	// NodeBMC Validation
@@ -865,25 +982,39 @@ func (bmc NodeBMC) ValidateEnhanced(class base.HMSClass, nodeChassisType NodeBla
 		case SingleNodeBlade:
 			if bmc.BMC != 0 {
 				// Single node chassis must have the BMC as 0
+				err := fmt.Errorf("invalid bmc ordinal (%v) expected value for a single node chassis is 0", bmc.BMC)
+				result = multierror.Append(result, err)
 			}
 		case DualNodeBlade:
 			if !(bmc.BMC == 1 || bmc.BMC == 2) {
 				// Dual node chassis must have BMC as 1 or 2
+				err := fmt.Errorf("invalid bmc ordinal (%v) expected values for a dual node chassis are 1 or 2", bmc.BMC)
+				result = multierror.Append(result, err)
 			}
-		case DenseQuadNodeBlade:
+		case QuadNodeBlade:
 			if !(1 <= bmc.BMC || bmc.BMC <= 4) {
 				// Dense Quad node chassis must have BMC between 1 and 4
+				err := fmt.Errorf("invalid bmc ordinal (%v) expected values for a quad node chassis are 1 to 4", bmc.BMC)
+				result = multierror.Append(result, err)
 			}
+		default:
+			err := fmt.Errorf("unknown node chassis type (%v)", nodeChassisType)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
 	case base.ClassMountain:
 		if !(bmc.BMC == 0 || bmc.BMC == 1) {
 			// Mountain blades have 2 BMCs
+			err := fmt.Errorf("invalid bmc ordinal (%v) expected values for a mountain node bmc are 0 or 1", bmc.BMC)
+			result = multierror.Append(result, err)
 		}
 	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
-	return nil
+
+	return result
 }
 
 func (bmc NodeBMC) Node(node int) Node {
@@ -931,17 +1062,21 @@ type NodeBladeType int // TODO Idk if this should be blade or chassis. This this
 const (
 	SingleNodeBlade NodeBladeType = iota
 	DualNodeBlade
-	DenseQuadNodeBlade // TODO Should this have "dense"
+	QuadNodeBlade // TODO Should this have "dense"
 )
 
 func (n Node) ValidateEnhanced(class base.HMSClass, nodeChassisType NodeBladeType) error {
+	var result error
+
 	// Perform normal validation
-	if n.Validate() != nil {
+	if err := n.Validate(); err != nil {
 		// Xname is not valid
+		result = multierror.Append(result, err)
 	}
 
-	if n.Parent().ValidateEnhanced(class, nodeChassisType) != nil {
+	if err := n.Parent().ValidateEnhanced(class, nodeChassisType); err != nil {
 		// Verify all parents are valid 
+		result = multierror.Append(result, err)
 	}
 	
 	// Node Validation
@@ -949,6 +1084,8 @@ func (n Node) ValidateEnhanced(class base.HMSClass, nodeChassisType NodeBladeTyp
 	case base.ClassRiver:
 		if n.Node != 0 {
 			// River node value must be 0
+			err := fmt.Errorf("invalid node ordinal (%v) expected value for a river node is 0", n.Node)
+			result = multierror.Append(result, err)
 		}
 	case base.ClassHill:
 		fallthrough
@@ -959,15 +1096,25 @@ func (n Node) ValidateEnhanced(class base.HMSClass, nodeChassisType NodeBladeTyp
 		case DualNodeBlade:
 			if n.Node != 0 {
 				// On a mountain dual node blade, each BMC controls 1 node.
+				err := fmt.Errorf("invalid node ordinal (%v) expected value for a mountain dual node blade is 0", n.Node)
+				result = multierror.Append(result, err)
 			}
-		case DenseQuadNodeBlade:
+		case QuadNodeBlade:
 			if !(n.Node == 0 || n.Node == 1) {
 				// Dual node blade must have BMC as 1 or 2
+				err := fmt.Errorf("invalid node ordinal (%v) expected values for a mountain quad node blade are 0 or 1", n.Node)
+				result = multierror.Append(result, err)
 			}
+		default:
+			err := fmt.Errorf("unknown node chassis type (%v)", nodeChassisType)
+			result = multierror.Append(result, err)
 		}
+	default:
+		err := fmt.Errorf("unknown HMSClass value (%v)", class)
+		result = multierror.Append(result, err)
 	}
 
-	return nil
+	return result
 }
 
 func (n Node) Parent() NodeBMC {
