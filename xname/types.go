@@ -71,7 +71,7 @@ func (c CDU) ValidateEnhanced() error {
 		result = multierror.Append(result, err)  
 	}
 
-	if !(0 <= c.CoolingGroup || c.CoolingGroup <= 999) {
+	if !(0 <= c.CoolingGroup && c.CoolingGroup <= 999) {
 		// Cooling group range
 		err := fmt.Errorf("invalid cooling group ordinal (%v) expected value between 0 and 999", c.CoolingGroup)
 		result = multierror.Append(result, err)  
@@ -127,7 +127,7 @@ func (cms CDUMgmtSwitch) ValidateEnhanced() error {
 		result = multierror.Append(result, err)  
 	}
 
-	if !(0 <= cms.Slot || cms.Slot <= 31) {
+	if !(0 <= cms.Slot && cms.Slot <= 31) {
 		// CDU Switch slot
 		err := fmt.Errorf("invalid slot ordinal (%v) expected value between 0 and 31", cms.Slot)
 		result = multierror.Append(result, err)  
@@ -941,7 +941,7 @@ type NodeBMC struct {
 	Cabinet int // X: 0-999
 	Chassis int // C: 0-7
 	Slot    int // S: 1-63
-	BMC     int // B: 0-1 - TODO the HSOS document is wrong here. as we do actually use greater than 1
+	BMC     int // B: 0-1
 }
 
 func (bmc NodeBMC) Parent() ComputeModule {
