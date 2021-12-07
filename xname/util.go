@@ -9,6 +9,7 @@ import (
 
 var ErrUnknownStruct = errors.New("unable to determine HMS Type from struct")
 
+// GetHMSType for a given xname structure will return its HMSType
 func GetHMSType(obj interface{}) (base.HMSType, error) {
 	// Handy bash fragment to generate the type switch below
 	// for hms_type in $(cat ./xname/types.go | grep '^type' | awk '{print $2}'); do
@@ -53,6 +54,7 @@ func GetHMSType(obj interface{}) (base.HMSType, error) {
 	return base.HMSTypeInvalid, ErrUnknownStruct
 }
 
+// FromString will convert the string representation of a xname into a xname structure
 func FromString(xname string) (interface{}, base.HMSType) {
 	hmsType := base.GetHMSType(xname)
 	if hmsType == base.HMSTypeInvalid {
@@ -181,7 +183,6 @@ func FromString(xname string) (interface{}, base.HMSType) {
 			Node:    matches[4],
 		}
 	default:
-		// TODO should this be a generic error? This means that this is not apart of the struct family of xnames.
 		return nil, base.HMSTypeInvalid
 	}
 	return component, hmsType

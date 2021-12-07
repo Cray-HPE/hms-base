@@ -88,6 +88,7 @@ const (
 	NodeFpga                 HMSType = "NodeFpga"                 // xXcCsSbBfF
 	HSNAsic                  HMSType = "HSNAsic"                  // xXcCrRaA
 	RouterFpga               HMSType = "RouterFpga"               // xXcCrRfF
+	RouterTOR                HMSType = "RouterTOR"                // xXcCrRtT
 	RouterTORFpga            HMSType = "RouterTORFpga"            // xXcCrRtTfF
 	RouterBMC                HMSType = "RouterBMC"                // xXcCrRbB
 	RouterBMCNic             HMSType = "RouterBMCNic"             // xXcCrRbBiI
@@ -177,7 +178,7 @@ var hmsCompRecognitionTable = map[string]hmsCompRecognitionEntry{
 	},
 	"cdu": {
 		CDU,
-		HMSTypeInvalid, //TODO: what's the CDU's parent? System, right?
+		System,
 		regexp.MustCompile("^d([0-9]+)$"),
 		"d%d",
 		1,
@@ -420,9 +421,16 @@ var hmsCompRecognitionTable = map[string]hmsCompRecognitionEntry{
 		"x%dc%dr%df%d",
 		4,
 	},
+	"routertor": {
+		RouterTOR,
+		RouterModule,
+		regexp.MustCompile("^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)$"),
+		"x%dc%dr%dt%d",
+		4,
+	},
 	"routertorfpga": {
 		RouterTORFpga,
-		RouterModule,
+		RouterTOR,
 		regexp.MustCompile("^x([0-9]{1,4})c([0-7])r([0-9]+)t([0-9]+)f([0-1])$"),
 		"x%dc%dr%dt%df%d",
 		5,
@@ -662,7 +670,9 @@ func ToHMSType(typeStr string) HMSType {
 	}
 }
 
-// TODO
+// GetHMSTypeFormatString for a given HMSType will return the corresponding
+// fmt.Sprintf compatible format string, and the number of verbs are required 
+// for the format string.
 func GetHMSTypeFormatString(hmsType HMSType) (string, int, error) {
 	typeLower := strings.ToLower(hmsType.String())
 	if value, ok := hmsCompRecognitionTable[typeLower]; ok {
@@ -672,6 +682,8 @@ func GetHMSTypeFormatString(hmsType HMSType) (string, int, error) {
 	return "", 0, fmt.Errorf("unknown HMSType: %s", hmsType)
 }
 
+// GetHMSTypeRegex for a given HMSType will return the regular expression 
+// that matches to match xnames of that HMSType. 
 func GetHMSTypeRegex(hmsType HMSType) (*regexp.Regexp, error) {
 	typeLower := strings.ToLower(hmsType.String())
 	if value, ok := hmsCompRecognitionTable[typeLower]; ok {
@@ -1172,6 +1184,11 @@ type ComponentArray struct {
 // Given a properly formatted xname, get its immediate parent.
 //  i.e. x0c0s22b11 would become x0c0s22
 func GetHMSCompParent(xname string) string {
+	hmsType := GetHMSType(xname)
+	if hmsType == CDU || hmsType == Cabinet {
+		return "s0"
+	}
+
 	// Trim all trailing numbers, then in the result, trim all trailing
 	// letters.
 	pstr := strings.TrimRightFunc(xname,

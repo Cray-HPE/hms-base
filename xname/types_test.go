@@ -1,12 +1,14 @@
 package xname
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
 	"testing"
 
 	base "github.com/Cray-HPE/hms-base"
+	"github.com/hashicorp/go-multierror"
 )
 
 func TestFoo(t *testing.T) {
@@ -171,13 +173,21 @@ func TestToFromXnames(t *testing.T) {
 				Chassis: 2,
 			},
 		}, {
-			"x1c2b0", // TODO add a test to verify what happens when x1c2b3 is given.
+			"x1c2b0",
 			base.ChassisBMC,
 			ChassisBMC{
 				Cabinet: 1,
 				Chassis: 2,
 				BMC:     0,
 			},
+		// }, { // TODO This causes a panic
+		// 	"x1c2b3",
+		// 	base.ChassisBMC,
+		// 	ChassisBMC{
+		// 		Cabinet: 1,
+		// 		Chassis: 2,
+		// 		BMC:     3,
+		// 	},
 		}, {
 			"x1c2h3",
 			base.MgmtHLSwitchEnclosure,
@@ -302,6 +312,12 @@ func TestToFromXnames(t *testing.T) {
 	}
 }
 
+//
+//
+// Tests to verify that Parent/Children functions behave as expected
+//
+//
+
 func TestSystemChildren(t *testing.T) {
 	system := System{}
 
@@ -381,6 +397,7 @@ func TestCabinetChildren(t *testing.T) {
 		t.Errorf("TestCabinetChildren FAIL: Expected chassis=%v but instead got chassis=%v", expectedChassis, chassis)
 	}
 }
+
 func TestCabinetParent(t *testing.T) {
 	cabinet := Cabinet{
 		Cabinet: 1,
@@ -396,6 +413,7 @@ func TestCabinetParent(t *testing.T) {
 func TestCabinetPDUControllerChildren(t *testing.T) {
 	// TODO no children structures have bene defined yet, but child xname formats have been defined
 }
+
 func TestCabinetPDUControllerParent(t *testing.T) {
 	cabinetPDUController := CabinetPDUController{
 		Cabinet: 1,
@@ -499,6 +517,7 @@ func TestChassisChildren(t *testing.T) {
 	}
 
 }
+
 func TestChassisParent(t *testing.T) {
 	chassis := Chassis{
 		Cabinet: 1,
@@ -517,6 +536,7 @@ func TestChassisParent(t *testing.T) {
 func TestChassisBMCChildren(t *testing.T) {
 	// TODO no children structures have bene defined yet, but child xname formats have been defined
 }
+
 func TestChassisBMCParent(t *testing.T) {
 	chassisBMC := ChassisBMC{
 		Cabinet: 1,
@@ -553,6 +573,7 @@ func TestMgmtSwitchChildren(t *testing.T) {
 		t.Errorf("TestMgmtSwitchChildren FAIL: Expected mgmtSwitchConnector=%v but instead got mgmtSwitchConnector=%v", expectedMgmtSwitchConnector, mgmtSwitchConnector)
 	}
 }
+
 func TestMgmtSwitchParent(t *testing.T) {
 	mgmtSwitch := MgmtSwitch{
 		Cabinet: 1,
@@ -573,6 +594,7 @@ func TestMgmtSwitchParent(t *testing.T) {
 func TestMgmtSwitchConnectorChildren(t *testing.T) {
 	// There are no childlen for a MgmtSwitchConnector
 }
+
 func TestMgmtSwitchConnectorParent(t *testing.T) {
 	mgmtSwitchConnector := MgmtSwitchConnector{
 		Cabinet: 1,
@@ -611,6 +633,7 @@ func TestMgmtHLSwitchEnclosureChildren(t *testing.T) {
 		t.Errorf("TestMgmtHLSwitchEnclosureChildren FAIL: Expected mgmtHLSwitch=%v but instead got mgmtHLSwitch=%v", expectedMgmtHLSwitch, mgmtHLSwitch)
 	}
 }
+
 func TestMgmtHLSwitchEnclosureParent(t *testing.T) {
 	mgmtHLSwitchEnclosure := MgmtHLSwitchEnclosure{
 		Cabinet: 1,
@@ -631,6 +654,7 @@ func TestMgmtHLSwitchEnclosureParent(t *testing.T) {
 func TestMgmtHLSwitchChildren(t *testing.T) {
 	// TODO no children structures have bene defined yet, and currently no child xname formats have been defined
 }
+
 func TestMgmtHLSwitchParent(t *testing.T) {
 	mgmtHLSwitch := MgmtHLSwitch{
 		Cabinet: 1,
@@ -669,6 +693,7 @@ func TestRouterModuleChildren(t *testing.T) {
 		t.Errorf("TestRouterModuleChildren FAIL: Expected routerBMC=%v but instead got routerBMC=%v", expectedRouterBMC, routerBMC)
 	}
 }
+
 func TestRouterModuleParent(t *testing.T) {
 	routerModule := RouterModule{
 		Cabinet: 1,
@@ -689,6 +714,7 @@ func TestRouterModuleParent(t *testing.T) {
 func TestRouterBMCChildren(t *testing.T) {
 	// TODO no children structures have bene defined yet, but child xname formats have been defined
 }
+
 func TestRouterBMCParent(t *testing.T) {
 	routerModule := RouterBMC{
 		Cabinet: 1,
@@ -728,6 +754,7 @@ func TestComputeModuleChildren(t *testing.T) {
 		t.Errorf("TestComputeModuleChildren FAIL: Expected nodeBMC=%v but instead got nodeBMC=%v", expectedNodeBMC, nodeBMC)
 	}
 }
+
 func TestComputeModuleParent(t *testing.T) {
 	computeModule := ComputeModule{
 		Cabinet: 1,
@@ -785,6 +812,7 @@ func TestNodeBMCParent(t *testing.T) {
 		t.Errorf("TestNodeBMCParent FAIL: Expected parent=%v but instead got parent=%v", expectedParent, parent)
 	}
 }
+
 func TestNodeChildren(t *testing.T) {
 	// TODO no children structures have bene defined yet, but child xname formats have been defined
 }
@@ -809,3 +837,311 @@ func TestNodeParent(t *testing.T) {
 		t.Errorf("TestNodeParent FAIL: Expected parent=%v but instead got parent=%v", expectedParent, parent)
 	}
 }
+
+//
+//
+// Validation function testing
+//
+//
+
+func TestValidate(t *testing.T) {
+	// CDU
+	// Negative tests
+	// - cooling group number is negative
+	// Positive Tests
+	// - cooling group is 0
+	// - cooling group is 999
+	// - cooling group is 123
+
+	// CDUMgmtSwitch
+	// Negative tests
+	// - cooling group number is negative
+	// - slot is negative
+	// Positive tests
+	// - slot is 0
+	// - slot is 15
+	// - slot is 31
+
+	// Cabinet
+	// Negative tests
+	// - cabinet number is negative
+	// - cabinet number is greater then 999
+	// Positive tests
+	// - cabinet is 0
+	// - cabinet is 10
+	// - cabinet is 999
+}
+
+
+func TestCDUValidationEnhanced(t *testing.T) {
+	// CDU
+	// Negative tests
+	// - cooling group number is negative
+	// - cooling group number is greater then 999
+	// Positive Tests
+	// - cooling group is 0
+	// - cooling group is 999
+	// - cooling group is 123
+
+	tests := []struct{
+		cdu CDU
+		expectedErrors []error
+	}{{
+		// Negative test - cooling group number is negative
+		CDU{
+			CoolingGroup: -1,
+		},
+		[]error{
+			errors.New("invalid CDU xname: d-1"),
+			errors.New("invalid cooling group ordinal (-1) expected value between 0 and 999"),
+		},
+	},{
+		// Negative test - cooling group number is greater then 999
+		CDU{
+			CoolingGroup: 1000,
+		},
+		[]error{
+			errors.New("invalid cooling group ordinal (1000) expected value between 0 and 999"),
+		},
+	}, {
+		// Negative test - cooling group number is greater then 999
+		CDU{
+			CoolingGroup: 3000,
+		},
+		[]error{
+			errors.New("invalid cooling group ordinal (3000) expected value between 0 and 999"),
+		},
+	}, {
+		// Positive Tests - cooling group is 0
+		CDU{
+			CoolingGroup: 0,
+		},
+		nil,
+	},{
+		// Positive Tests - cooling group is 999
+		CDU{
+			CoolingGroup: 123,
+		},
+		nil,
+	}, {
+		// Positive Tests - cooling group is 999
+		CDU{
+			CoolingGroup: 999,
+		},
+		nil,
+	}}
+
+	for _, test := range tests {
+		err := test.cdu.ValidateEnhanced()
+
+		var errors []error
+		if err != nil {
+			errors = err.(*multierror.Error).Errors
+		}
+		if !compareErrorSlices(test.expectedErrors, errors){
+			t.Errorf("Unexpected validation error for %s: Expected errors: %v, Actual errors: %v", test.cdu, test.expectedErrors, errors)
+		}
+	}
+}
+
+func TestCDUMgmtSwitchValidationEnhanced(t *testing.T) {
+	// CDUMgmtSwitch
+	// Negative tests
+	// - cooling group number is negative
+	// - cooling group number is greater then 999 (verify call to the parent ValidateEnhanced worked)
+	// - slot is negative
+	// - slot is greater then 31
+	// Positive tests
+	// - slot is 0
+	// - slot is 15
+	// - slot is 31
+
+	tests := []struct{
+		component CDUMgmtSwitch
+		expectedErrors []error
+	}{{
+		// Negative test - cooling group number is negative
+		CDUMgmtSwitch{
+			CoolingGroup: -1,
+			Slot: 2,
+		},
+		[]error{
+			errors.New("invalid CDUMgmtSwitch xname: d-1w2"),
+			errors.New("invalid CDU xname: d-1"),
+			errors.New("invalid cooling group ordinal (-1) expected value between 0 and 999"),
+		},
+	},{
+		// Negative test - cooling group number is greater then 999 (verify call to the parent ValidateEnhanced worked)
+		CDUMgmtSwitch{
+			CoolingGroup: 1000,
+			Slot: 2,
+		},
+		[]error{
+			errors.New("invalid cooling group ordinal (1000) expected value between 0 and 999"),
+		},
+	}, {
+		// Negative test - cooling group number is 1000 and the slot is negative
+		CDUMgmtSwitch{
+			CoolingGroup: 1000,
+			Slot: -1,
+		},
+		[]error{
+			errors.New("invalid CDUMgmtSwitch xname: d1000w-1"),
+			errors.New("invalid cooling group ordinal (1000) expected value between 0 and 999"),
+			errors.New("invalid slot ordinal (-1) expected value between 0 and 31"),
+		},
+	}, {
+		// Negative test - slot is negative
+		CDUMgmtSwitch{
+			CoolingGroup: 1,
+			Slot: -1,
+		},
+		[]error{
+			errors.New("invalid CDUMgmtSwitch xname: d1w-1"),
+			errors.New("invalid slot ordinal (-1) expected value between 0 and 31"),
+		},
+	}, {
+		// Negative test - slot is greater then 31
+		CDUMgmtSwitch{
+			CoolingGroup: 1,
+			Slot: 33,
+		},
+		[]error{
+			errors.New("invalid slot ordinal (33) expected value between 0 and 31"),
+		},
+	},{
+		// Positive Tests - slot is 0
+		CDUMgmtSwitch{
+			CoolingGroup: 0,
+			Slot: 0,
+		},
+		nil,
+	},{
+		// Positive Tests - slot is 15
+		CDUMgmtSwitch{
+			CoolingGroup: 123,
+			Slot: 15,
+		},
+		nil,
+	}, {
+		// Positive Tests - slot is 31
+		CDUMgmtSwitch{
+			CoolingGroup: 999,
+			Slot: 31,
+		},
+		nil,
+	}}
+
+	for _, test := range tests {
+		err := test.component.ValidateEnhanced()
+
+		var errors []error
+		if err != nil {
+			errors = err.(*multierror.Error).Errors
+		}
+		if !compareErrorSlices(test.expectedErrors, errors){
+			t.Errorf("Unexpected validation error for %s: Expected errors: %v, Actual errors: %v", test.component, test.expectedErrors, errors)
+		}
+	}
+}
+
+func TestCabinetSwitchValidationEnhanced(t *testing.T) {
+	// Cabinet
+	// Negative tests
+	// - cabinet number is negative
+	// - cabinet number is greater then 999
+	// Positive tests
+	// - cabinet is 0
+	// - cabinet is 10
+	// - cabinet is 999
+}
+
+func TestChassisValidationEnhanced(t *testing.T) {
+	// Chassis
+	// - River
+	// 	 	Negative tests
+	// 		- cabinet number is negative
+	// 		- cabinet number is greater then 999
+	//		- Chassis is not 0 (1-7)
+	//	 	Positive tests
+	//		- Chassis is 0
+	// - Hill
+	// 	 	Negative tests
+	// 		- cabinet number is negative
+	// 		- cabinet number is greater then 999
+	//		- Chassis is not 1 or 3 (0, 2, 4-7)
+	//	 	Positive tests
+	//		- Chassis is not 1 or 3
+	// - Mountain
+	// 	 	Negative tests
+	// 		- cabinet number is negative
+	// 		- cabinet number is greater then 999
+	//		- Chassis is negative
+	// 		- Chassis is greater then 7
+	//	 	Positive tests
+	//		- Chassis is 0
+	//		- Chassis is 4
+	// 		- Chassis is 7
+}
+
+func TestChassisBMCValidationEnhanced(t *testing.T) {
+
+}
+
+func TestMgmtSwitchValidationEnhanced(t *testing.T) {
+
+}
+
+func TestMgmtSwitchConnectorValidationEnhanced(t *testing.T) {
+
+}
+
+func TestMgmtHLSwitchEnclosureValidationEnhanced(t *testing.T) {
+
+}
+
+func TestMgmtHLSwitchValidationEnhanced(t *testing.T) {
+
+}
+
+func TestRouterModuleValidationEnhanced(t *testing.T) {
+
+}
+
+func TestRouterBMCValidationEnhanced(t *testing.T) {
+
+}
+
+func TestComputeModuleValidationEnhanced(t *testing.T) {
+
+}
+
+func TestNodeBMCValidationEnhanced(t *testing.T) {
+
+}
+
+func TestNodeValidationEnhanced(t *testing.T) {
+
+}
+
+//
+//
+// Test Helpers
+//
+//
+
+func compareErrorSlices(x, y []error) bool {
+	if len(x) != len(y) {
+		return false
+	}
+
+	for i, errorX := range x {
+		errorY := y[i]
+
+		if errorX.Error() != errorY.Error() {
+			return false
+		}
+	}
+
+	return true
+} 

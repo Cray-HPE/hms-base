@@ -233,6 +233,14 @@ var compIDValidateTD = []ValidateTestData{
 		[]string{"d0wW"},
 		false,
 	},
+	{
+		// Test case 12 - RouterTORFpga
+		[]string{"xXcCrRtTfF", "x0c0r0t0f0", "x0c0r0t0f1", "x0c0r0t0f2"},
+		[]string{"x0c0r0t0f0", "x0c0r0t0f1"},
+		[]string{"xXcCrRtTfF", "x0c0r0t0f2"},
+		false,
+
+	},
 }
 
 // TestValidateCompIDs unit test function for ValidateCompIDs
@@ -247,6 +255,72 @@ func TestValidateCompIDs(t *testing.T) {
 		if !reflect.DeepEqual(bad, test.bad) {
 			t.Errorf("TestValidateCompIDs Test Case %d: FAIL: Expected valid=%v and invalid=%v but instead got valid=%v and invalid=%v",
 				n, test.good, test.bad, good, bad)
+		}
+	}
+}
+
+type GetHMSCompParentTestData struct {
+	xname  string
+	expectedParentXname string
+}
+
+var getHMSCompParentTestData = []GetHMSCompParentTestData{
+	{"d1", "s0"},                       // CDU
+	{"x1", "s0"},                       // Cabinet
+	{"d0w0", "d0"},                     // CDUMgmtSwitch
+	{"x0d0", "x0"},                     // CabinetCDU
+	{"x0m1p0", "x0m1"},                 // CabinetPDU
+	{"x2000m3", "x2000"},               // CabinetPDUController
+	{"x0m0i1", "x0m0"},                 // CabinetPDUNic
+	{"x0m1p3j1", "x0m1p3"},             // CabinetPDUOutlet
+	{"x0m1p3v1", "x0m1p3"},             // CabinetPDUPowerConnector
+	{"x0b0", "x0"},                     // CabinetBMC
+	{"x0c0", "x0"},                     // Chassis
+	{"x0c0b0", "x0c0"},                 // ChassisBMC
+	{"x0c0b0i1", "x0c0b0"},             // ChassisBMCNic
+	{"x0c0t9", "x0c0"},                 // CMMRectifier
+	{"x0c0f0", "x0c0"},                 // CMMFpga
+	{"x0e0", "x0"},                     // CEC
+	{"x0c0s0", "x0c0"},                 // ComputeModule
+	{"x0c0r0", "x0c0"},                 // RouterModule
+	{"x0c0s0b0", "x0c0s0"},             // NodeBMC
+	{"x0c0s0e0", "x0c0s0"},             // NodeEnclosure
+	{"x0c0s0e0t0", "x0c0s0e0"},         // NodeEnclosurePowerSupply
+	{"x0c0s0j1", "x0c0s0"},             // NodePowerConnector
+	{"x0c0s0v1", "x0c0s0"},             // NodePowerConnector
+	{"x0c0s0b0n0", "x0c0s0b0"},         // Node
+	{"x0c0s0b0n0p0", "x0c0s0b0n0"},     // Processor
+	{"x0c0s0b0n0g0k0", "x0c0s0b0n0g0"}, // Drive
+	{"x0c0s0b0n0g0", "x0c0s0b0n0"},     // StorageGroup
+	{"x0c0s0b0n0i1", "x0c0s0b0n0"},     // NodeNic
+	{"x0c0s0b0n0h1", "x0c0s0b0n0"},     // NodeHsnNic
+	{"x0c0s0b0n0d0", "x0c0s0b0n0"},     // Memory
+	{"x0c0s0b0n0a0", "x0c0s0b0n0"},     // NodeAccel
+	{"x0c0s0b0n0r0", "x0c0s0b0n0"},     // NodeAccelRiser
+	{"x0c0s0b0f0", "x0c0s0b0"},         // NodeFpga
+	{"x0c0r16e0", "x0c0r16"},           // HSNBoard
+	{"x0c0r0a0", "x0c0r0"},             // HSNAsic
+	{"x0c0r0f0", "x0c0r0"},             // RouterFpga
+	{"x0c0r0t0f0", "x0c0r0t0"},         // RouterTORFpga
+	{"x0c0r0b0", "x0c0r0"},             // RouterBMC
+	{"x0c0r0b0i1", "x0c0r0b0"},         // RouterBMCNic
+	{"x0c0r0v1", "x0c0r0"},             // RouterPowerConnector
+	{"x0c0r0a0l0", "x0c0r0a0"},         // HSNLink
+	{"x0c0r0j1", "x0c0r0"},             // HSNConnector
+	{"x0c0r0j1p1", "x0c0r0j1"},         // HSNConnectorPort
+	{"x0c0w1", "x0c0"},                 // MgmtSwitch
+	{"x0c0w1j1", "x0c0w1"},             // MgmtSwitchConnector
+	{"x0c0h1s2", "x0c0h1"},             // MgmtHLSwitch
+}
+
+// TestGetHMSCompParent is the unit test function for GetHMSCompParent
+func TestGetHMSCompParent(t *testing.T) {
+
+	for n, test := range getHMSCompParentTestData {
+		parentXname := GetHMSCompParent(test.xname)
+		if parentXname != test.expectedParentXname {
+			t.Errorf("TestGetHMSCompParent Test Case %d: FAIL: For xname=%v expected parent=%v but instead got parent=%v",
+				n, test.xname, test.expectedParentXname, parentXname)
 		}
 	}
 }
