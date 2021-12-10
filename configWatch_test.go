@@ -31,9 +31,9 @@ import (
 
 func TestLoadFile(t *testing.T) {
 	tests := []struct {
-		config       []byte
-		roles        []string
-		subroles     []string
+		config   []byte
+		roles    []string
+		subroles []string
 	}{{ // Test 0: Normal case
 		json.RawMessage(`{"HMSExtendedDefinitions":{"Role":["UAN","Foo"],"SubRole":["Data","Bar"]}}`),
 		[]string{"UAN", "Foo"},
