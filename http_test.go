@@ -24,29 +24,29 @@ package base
 
 import (
 	"net/http"
-	"testing"
 	"os"
+	"testing"
 )
 
 func TestGetServiceInstanceName(t *testing.T) {
-	hname,err := os.Hostname()
-	if (err != nil) {
+	hname, err := os.Hostname()
+	if err != nil {
 		t.Logf("Warning, can't get os.Hostname()!")
 	}
 
-	inst,ierr := GetServiceInstanceName()
-	if ((err == nil) && (ierr != nil)) {
+	inst, ierr := GetServiceInstanceName()
+	if (err == nil) && (ierr != nil) {
 		t.Errorf("Hostname() call worked, GetServiceInstanceName() failed: %v",
 			ierr)
 	}
 
-	if ((err != nil) && (ierr == nil)) {
+	if (err != nil) && (ierr == nil) {
 		t.Errorf("Hostname() call failed, GetServiceInstanceName() worked: %v",
 			err)
 	}
 
-	if (hname != inst) {
-		t.Errorf("Hostname mismatch: hostname: '%s' instname: '%s'",hname,inst)
+	if hname != inst {
+		t.Errorf("Hostname mismatch: hostname: '%s' instname: '%s'", hname, inst)
 	}
 }
 
@@ -54,28 +54,26 @@ func Test_SetHTTPUserAgent(t *testing.T) {
 	var hkey string
 	expval := "xyzzy"
 
-	req,_ := http.NewRequest("GET","http://alfred_e_newman.com",nil)
-	SetHTTPUserAgent(req,expval)
+	req, _ := http.NewRequest("GET", "http://alfred_e_newman.com", nil)
+	SetHTTPUserAgent(req, expval)
 	hkey = req.Header.Get(USERAGENT)
-	if (hkey == "") {
-		t.Errorf("%s key not present!",USERAGENT)
+	if hkey == "" {
+		t.Errorf("%s key not present!", USERAGENT)
 	}
-	if (hkey != expval) {
+	if hkey != expval {
 		t.Errorf("%s key has wrong value, expected: '%s', got: '%s'",
-			USERAGENT,expval,hkey)
+			USERAGENT, expval, hkey)
 	}
 
-	req,_ = http.NewRequest("POST","http://what_me_worry.com",nil)
-	req.Header.Set("Content-Type","application/json")
-	SetHTTPUserAgent(req,expval)
+	req, _ = http.NewRequest("POST", "http://what_me_worry.com", nil)
+	req.Header.Set("Content-Type", "application/json")
+	SetHTTPUserAgent(req, expval)
 	hkey = req.Header.Get(USERAGENT)
-	if (hkey == "") {
-		t.Errorf("%s key not present!",USERAGENT)
+	if hkey == "" {
+		t.Errorf("%s key not present!", USERAGENT)
 	}
-	if (hkey != expval) {
+	if hkey != expval {
 		t.Errorf("%s key has wrong value, expected: '%s', got: '%s'",
-			USERAGENT,expval,hkey)
+			USERAGENT, expval, hkey)
 	}
 }
-
-
