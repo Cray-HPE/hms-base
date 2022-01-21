@@ -1,11 +1,6 @@
-NAME ?= hms-base
-VERSION ?= $(shell cat .version)
 
-all : unittest coverage
+all:  unittest
+.PHONY:  unittest
 
 unittest:
-	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
-	./runUnitTest.sh
-
-coverage:
-	./runCoverage.sh
+	go test ./... -cover
